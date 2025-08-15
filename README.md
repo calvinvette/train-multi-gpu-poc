@@ -12,6 +12,10 @@ This project fine‑tunes a gated model and dataset using [TRL’s `SFTTrainer`]
 
 ---
 
+The "download_*" scripts download the data and models respectively. 
+The "download_model.py" downloads both Llama 3.2-3B and Qwen3-Coder-30B-A3B. If you're only using one, comment out the other.
+Optionally, copy the .env.example to .env and modify appropriately
+
 ## 1) Hardware & cluster assumptions
 
 - 2× SLURM nodes; each node has:
