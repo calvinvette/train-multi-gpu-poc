@@ -26,6 +26,8 @@ export MACHINE_RANK=0
 export MLFLOW_TRACKING_URI="http://public-tracking-e00-mm11asg2freawwc-zecmz1tr6rjc6j9-mlflow.gw.msp.eu-north1.nebius.cloud" # Port 5000?
 export MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING=true
 
+source .venv/bin/activate
+
 mkdir -p logs
 
 srun --cpu-bind=none bash -lc '

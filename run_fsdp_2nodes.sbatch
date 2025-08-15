@@ -30,6 +30,8 @@ export MACHINE_RANK=$SLURM_NODEID
 export MLFLOW_TRACKING_URI="http://public-tracking-e00-mm11asg2freawwc-zecmz1tr6rjc6j9-mlflow.gw.msp.eu-north1.nebius.cloud" # Port 5000?
 export MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING=true
 
+source .venv/bin/activate
+
 # If needed: create logs dir
 mkdir -p logs
 
