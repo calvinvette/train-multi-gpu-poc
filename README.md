@@ -242,6 +242,21 @@ Artifacts:
 - Experiment with packing, curriculum, or better formatting for function‑calling data.
 - Clean up Terraform
 
+Logging to MLFLOW:
+
+```
+export MLFLOW_TRACKING_SERVER_CERT_PATH=</path/to/certificate>
+export MLFLOW_TRACKING_URI=https://public-tracking-...-mlflow.gw.msp.eu-north1.nebius.cloud
+export MLFLOW_TRACKING_USERNAME=mlflow-nebius
+export MLFLOW_TRACKING_PASSWORD=<password set at cluster creation>
+
+export MLFLOW_EXPERIMENT_NAME=<default experiment name>
+export MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING=true
+```
+
+
+
+
 ## Terraform Files
 
  - The supplied terraform files are in a rough state

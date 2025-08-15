@@ -236,7 +236,8 @@ def main():
     # Core
     parser.add_argument("--mode", choices=["pp", "ddp", "fsdp"], default="ddp",
                         help="Training mode: naive pipeline (pp), DDP (ddp), or FSDP (fsdp)")
-    parser.add_argument("--model-name", default="Qwen/Qwen3-Coder-30B-A3B-Instruct")
+    # parser.add_argument("--model-name", default="Qwen/Qwen3-Coder-30B-A3B-Instruct")
+    parser.add_argument("--model-name", default="meta-llama/Meta-Llama-3-8B")
     parser.add_argument("--dataset", default="Salesforce/xlam-function-calling-60k")
     parser.add_argument("--dataset-split", default="train")
     parser.add_argument("--dataset-text-field", default=None, help="If set, use this field as text")

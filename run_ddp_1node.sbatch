@@ -30,6 +30,7 @@ source .venv/bin/activate
 
 mkdir -p logs
 
+# --model-name Qwen/Qwen3-Coder-30B-A3B-Instruct \
 srun --cpu-bind=none bash -lc '
 accelerate launch \
   --config_file configs/accelerate_ddp.yaml \
@@ -39,7 +40,7 @@ accelerate launch \
   --main_process_port ${MASTER_PORT} \
   train_sft.py \
     --mode ddp \
-    --model-name Qwen/Qwen3-Coder-30B-A3B-Instruct \
+    --model-name meta-llama/Meta-Llama-3-8B \
     --dataset Salesforce/xlam-function-calling-60k \
     --dataset-split train \
     --output-dir ./results_ddp_qwen30b \
