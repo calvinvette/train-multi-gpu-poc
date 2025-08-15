@@ -271,7 +271,7 @@ def main():
 
     # MLflow & Prometheus
     parser.add_argument("--mlflow-tracking-uri", default=os.environ.get("MLFLOW_TRACKING_URI", ""))  # if empty, file-based
-    parser.add_argument("--mlflow-experiment", default="sft_lora")
+    parser.add_argument("--mlflow-experiment", default=os.environ.get("MLFLOW_EXPERIMENT_NAME", "sft_lora"))
     parser.add_argument("--gpu-peak-tflops", type=float, default=None,
                         help="GPU peak BF16 TFLOPS for MFU calc (e.g., 990).")
     parser.add_argument("--prometheus-port", type=int, default=None,
