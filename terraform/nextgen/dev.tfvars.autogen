@@ -1,0 +1,113 @@
+<!-- BEGIN_TF_DOCS -->
+accounting_enabled                = false
+backups_enabled                   = "auto"
+backups_password                  = ""
+backups_prune_schedule            = ""
+backups_retention                 = ""
+backups_schedule                  = ""
+cleanup_bucket_on_destroy         = ""
+company_name                      = ""
+dcgm_job_mapping_enabled          = true
+etcd_cluster_size                 = 3
+filestore_accounting              = ""
+filestore_controller_spool        = ""
+filestore_jail                    = ""
+filestore_jail_submounts          = []
+flux_interval                     = "1m"
+github_org                        = "nebius"
+github_repository                 = "soperator"
+iam_project_id                    = ""
+iam_tenant_id                     = ""
+iam_token                         = ""
+k8s_cluster_node_ssh_access_users = []
+k8s_version                       = ""
+maintenance                       = "none"
+nfs = {
+  "enabled": false,
+  "public_ip": false,
+  "resource": {
+    "platform": "cpu-d3",
+    "preset": "32vcpu-128gb"
+  },
+  "size_gibibytes": 93
+}
+node_local_image_disk = {
+  "enabled": false
+}
+node_local_jail_submounts            = []
+o11y_iam_tenant_id                   = ""
+o11y_profile                         = ""
+public_o11y_enabled                  = true
+region                               = ""
+slurm_accounting_config              = {}
+slurm_exporter_enabled               = true
+slurm_health_check_config            = ""
+slurm_login_ssh_root_public_keys     = ""
+slurm_login_sshd_config_map_ref_name = ""
+slurm_nodeset_accounting             = ""
+slurm_nodeset_controller = {
+  "boot_disk": {
+    "block_size_kibibytes": 4,
+    "size_gibibytes": 128,
+    "type": "NETWORK_SSD"
+  },
+  "resource": {
+    "platform": "cpu-d3",
+    "preset": "16vcpu-64gb"
+  },
+  "size": 1
+}
+slurm_nodeset_login = {
+  "boot_disk": {
+    "block_size_kibibytes": 4,
+    "size_gibibytes": 128,
+    "type": "NETWORK_SSD"
+  },
+  "resource": {
+    "platform": "cpu-d3",
+    "preset": "16vcpu-64gb"
+  },
+  "size": 1
+}
+slurm_nodeset_system = {
+  "boot_disk": {
+    "block_size_kibibytes": 4,
+    "size_gibibytes": 128,
+    "type": "NETWORK_SSD"
+  },
+  "max_size": 9,
+  "min_size": 3,
+  "resource": {
+    "platform": "cpu-d3",
+    "preset": "16vcpu-64gb"
+  }
+}
+slurm_nodeset_workers = [
+  {
+    "boot_disk": {
+      "block_size_kibibytes": 4,
+      "size_gibibytes": 128,
+      "type": "NETWORK_SSD"
+    },
+    "max_unavailable_percent": 50,
+    "nodes_per_nodegroup": 1,
+    "resource": {
+      "platform": "cpu-d3",
+      "preset": "16vcpu-64gb"
+    },
+    "size": 1
+  }
+]
+slurm_operator_stable                 = true
+slurm_operator_version                = ""
+slurm_partition_config_type           = "default"
+slurm_partition_raw_config            = []
+slurm_rest_enabled                    = true
+slurm_shared_memory_size_gibibytes    = 64
+slurm_worker_features                 = []
+slurm_worker_sshd_config_map_ref_name = ""
+slurmdbd_config                       = {}
+telemetry_enabled                     = true
+use_default_apparmor_profile          = true
+vpc_subnet_id                         = ""
+<!-- END_TF_DOCS -->

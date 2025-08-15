@@ -1,0 +1,12 @@
+externalS3:
+  host: "storage.eu-north1.nebius.cloud"
+  port: 443
+  useCredentialsInSecret: true
+  accessKeyID: ""
+  accessKeySecret: ""
+  existingSecret: ""
+  existingSecretAccessKeyIDKey: "root-user"
+  existingSecretKeySecretKey: "root-password"
+  protocol: "https"
+  bucket: "mlflow"
+  serveArtifacts: true

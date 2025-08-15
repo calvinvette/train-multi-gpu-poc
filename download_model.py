@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+
+# login in to HF first
+# $ huggingface-cli login
+
 from huggingface_hub import snapshot_download
 
 # download model to local directory

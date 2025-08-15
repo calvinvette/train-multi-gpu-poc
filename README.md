@@ -240,7 +240,15 @@ Artifacts:
 - Wire **MLflow**, **Prometheus**, and **Grafana** (already scaffolded in `train_sft.py`).  
 - Add resume/ckpt strategies and evaluation splits.  
 - Experiment with packing, curriculum, or better formatting for function‑calling data.
+- Clean up Terraform
 
+## Terraform Files
+
+ - The supplied terraform files are in a rough state
+ - They are intended to create the necessary infrastructure for the training (Kubernetes, Grafana/Prometheus, MLFlow, SOperator)
+ - They are currently specific to the Nebius platform and rely on its CLI and are based on their Solutions Library
+ - Both these TF files and the ones in the Solutions Library need refactoring - expect hand-modifications for the moment.
+ 
 ---
 
 **License & credits**  
