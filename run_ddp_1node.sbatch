@@ -22,6 +22,8 @@ export MASTER_PORT=${MASTER_PORT:-29500}
 export NUM_MACHINES=1
 export MACHINE_RANK=0
 
+# Optional: MLflow tracking URI
+export MLFLOW_TRACKING_URI="http://public-tracking-e00-mm11asg2freawwc-zecmz1tr6rjc6j9-mlflow.gw.msp.eu-north1.nebius.cloud" # Port 5000?
 export MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING=true
 
 mkdir -p logs

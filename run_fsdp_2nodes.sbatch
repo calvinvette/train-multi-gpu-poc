@@ -27,7 +27,7 @@ export NUM_MACHINES=$SLURM_NNODES
 export MACHINE_RANK=$SLURM_NODEID
 
 # Optional: MLflow tracking URI
-export MLFLOW_TRACKING_URI="http://YOUR-MLFLOW:5000"
+export MLFLOW_TRACKING_URI="http://public-tracking-e00-mm11asg2freawwc-zecmz1tr6rjc6j9-mlflow.gw.msp.eu-north1.nebius.cloud" # Port 5000?
 export MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING=true
 
 # If needed: create logs dir
