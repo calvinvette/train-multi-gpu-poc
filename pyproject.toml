@@ -1,0 +1,25 @@
+[project]
+name = "multigpu"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "accelerate>=1.10.0",
+    "bitsandbytes>=0.46.1",
+    "datasets>=4.0.0",
+    "deepspeed>=0.17.4",
+    "einops>=0.8.1",
+    "hf-transfer>=0.1.9",
+    "huggingface-hub>=0.34.4",
+    "mlflow>=3.2.0",
+    "nltk>=3.9.1",
+    "peft>=0.17.0",
+    "scipy>=1.16.1",
+    "sentencepiece>=0.2.0",
+    "transformers>=4.55.0",
+    "trl>=0.21.0",
+    "wand>=0.6.13",
+    "wheel>=0.45.1",
+    "xformers>=0.0.31.post1",
+]
