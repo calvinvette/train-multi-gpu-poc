@@ -76,6 +76,36 @@ def build_bnb_config(enabled_4bit: bool):
         bnb_4bit_compute_dtype=torch.bfloat16,
     )
 
+def to_prompt_completion(ex):
+    # Normalize tools and answer to JSON strings
+    tools = ex.get("tools", [])
+    if isinstance(tools, str):
+        try: tools = json.loads(tools)
+        except Exception: pass
+    tools_txt = json.dumps(tools, ensure_ascii=False, indent=2)
+
+    ans = ex.get("answer")
+    if isinstance(ans, str):
+        try: ans = json.loads(ans)
+        except Exception: pass
+    answer_json = json.dumps(ans, ensure_ascii=False)
+
+    prompt = (
+        "You are a function-calling assistant. Return ONLY a JSON array of tool calls "
+        'as [{"name": "<tool_name>", "arguments": {...}}, ...].\n\n'
+        f"TOOLS:\n{tools_txt}\n\n"
+        f"USER QUERY:\n{ex.get('query','')}\n"
+    )
+
+    # TRL 0.21: prompt-completion dataset => loss on completion by default
+    return {"prompt": prompt, "completion": answer_json}
+        # or tool_calls field if template supports it
+        #    {"prompt": [{"role":"user","content": ex["query"]}],
+        #     "completion": [{"role":"assistant","content": ex["answer"]}],  
+        #     "tools": tools_schema_list}
+
+dataset = dataset.map(to_prompt_completion, remove_columns=[c for c in dataset.column_names if c not in {"prompt","completion"}])
+
 # Separator where the **answer JSON** begins (loss is applied after this)
 SEP = "\n### ASSISTANT JSON:\n"
 
@@ -171,6 +201,39 @@ def main():
     # SFT config (replaces plain TrainingArguments)
     # NOTE: completion_only_loss=True + response_template=SEP will mask loss on the prompt,
     # keeping loss only on the **answer JSON** that follows SEP.
+    # sft_config = SFTConfig(
+    #     output_dir=args.output_dir,
+    #     per_device_train_batch_size=args.per_device_train_batch_size,
+    #     gradient_accumulation_steps=args.grad_accum_steps,
+    #     learning_rate=args.learning_rate,
+    #     warmup_ratio=args.warmup_ratio,
+    #     max_steps=args.max_steps,
+    #     logging_steps=args.logging_steps,
+    #     save_steps=args.save_steps,
+    #     optim=args.optim,
+    #     bf16=args.bf16,
+    #     # max_seq_length=args.max_seq_length,   # migrated
+    #     report_to=["mlflow"] if args.mlflow_tracking_uri else [],
+    #     completion_only_loss=True,
+    #     response_template=SEP,
+    # )
+
+    # Trainer
+    # trainer = SFTTrainer(
+    #     model=model,
+    #     train_dataset=ds,
+    #     tokenizer=tokenizer,            # required with formatting_func
+    #     formatting_func=formatting_func,
+    #     peft_config=peft_config,
+    #     args=sft_config,
+    #     max_seq_length=args.max_seq_length,   # ✅ pass here in 0.21.0 (or default to tokenizer.max_model_length)
+    # )
+
+    from trl import SFTTrainer, SFTConfig
+
+    # Optional: enforce your own max length in 0.21 by setting it on the tokenizer
+    tokenizer.model_max_length = args.max_seq_length  # safest cross-version approach
+
     sft_config = SFTConfig(
         output_dir=args.output_dir,
         per_device_train_batch_size=args.per_device_train_batch_size,
@@ -182,21 +245,18 @@ def main():
         save_steps=args.save_steps,
         optim=args.optim,
         bf16=args.bf16,
-        # max_seq_length=args.max_seq_length,   # migrated
         report_to=["mlflow"] if args.mlflow_tracking_uri else [],
-        completion_only_loss=True,
-        response_template=SEP,
+        # completion_only_loss: for prompt-completion datasets this is True by default in 0.21;
+        # you can still pass completion_only_loss=True explicitly if you want.
     )
 
-    # Trainer
     trainer = SFTTrainer(
         model=model,
-        train_dataset=ds,
-        tokenizer=tokenizer,            # required with formatting_func
-        formatting_func=formatting_func,
+        train_dataset=dataset,               # now contains "prompt" and "completion"
+        processing_class=tokenizer,          # <- in 0.21 use processing_class (or omit)
         peft_config=peft_config,
         args=sft_config,
-        max_seq_length=args.max_seq_length,   # ✅ pass here in 0.21.0 (or default to tokenizer.max_model_length)
+        # DO NOT pass response_template or tokenizer here in 0.21
     )
 
     # PEFT + FSDP: wrap only LoRA params
