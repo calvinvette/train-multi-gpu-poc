@@ -47,7 +47,7 @@ from transformers import (
     set_seed,
 )
 from peft import LoraConfig
-from trl import SFTTrainer
+from trl import SFTTrainer, SFTConfig
 
 # Telemetry
 import mlflow
@@ -122,9 +122,12 @@ def maybe_textify(example):
     if "instruction" in example and "output" in example:
         return {"text": f"Instruction:\n{example['instruction']}\n\nResponse:\n{example['output']}"}
 
-    # Fallback: stringify everything
-    return {"text": json.dumps(example, ensure_ascii=False)}
+    if "query" in example and "answer" in example and "tools" in example:
+        return {"text": f"query:\n{example['query']}\n\nanswer:\n{example['answer']}"}
 
+    # Fallback: stringify everything
+    # return {"text": json.dumps(example, ensure_ascii=False)}
+    return {"text": example}
 
 class GPUAndMFUTracker:
     """
@@ -379,13 +382,67 @@ def main():
         report_to=["mlflow"],       # <-- send trainer metrics to MLflow
     )
 
+ v   # --------------------------------------------------------------------------------
+    # Collator and Formatting
+    # --------------------------------------------------------------------------------
+
+    SEP = "\n### ASSISTANT JSON:\n"
+
+    def formatting_func(example):
+        import json
+        # Normalize answer JSON
+        try:
+            ans = json.loads(example["answer"]) if isinstance(example["answer"], str) else example["answer"]
+        except Exception:
+            ans = example["answer"]
+        answer_json = json.dumps(ans, ensure_ascii=False)
+
+        tools = example.get("tools", [])
+        if isinstance(tools, str):
+            try:
+                tools = json.loads(tools)
+            except Exception:
+                pass
+        tools_text = json.dumps(tools, ensure_ascii=False, indent=2)
+
+        query = example["query"]
+
+        prompt = (
+            "You are a function-calling assistant. Return ONLY JSON.\n\n"
+            f"TOOLS:\n{tools_text}\n\n"
+            f"USER QUERY:\n{query}\n"
+        )
+
+        # The separator tells the trainer where the answer begins
+        return [prompt + SEP + answer_json]
+
+    # Training args now go through SFTConfig
+    sft_config = SFTConfig(
+        output_dir=args.output_dir,
+        per_device_train_batch_size=args.per_device_train_batch_size,
+        gradient_accumulation_steps=args.grad_accum_steps,
+        learning_rate=args.learning_rate,
+        warmup_ratio=args.warmup_ratio,
+        max_steps=args.max_steps,
+        logging_steps=args.logging_steps,
+        save_steps=args.save_steps,
+        optim=args.optim,
+        bf16=args.bf16,
+        max_seq_length=args.max_seq_length,
+        report_to=["mlflow"],
+        completion_only_loss=True,            # <--- replaces DataCollatorForCompletionOnlyLM
+        response_template=SEP,                # <--- the marker where labels start
+    )
+
+
     # --------------------------------------------------------------------------------
     # Trainer
     # --------------------------------------------------------------------------------
     trainer = SFTTrainer(
         model=model,
         train_dataset=dataset,
-        tokenizer=tokenizer,
+        # tokenizer=tokenizer,
+        formatting_func=formatting_func,
         peft_config=peft_config,
         max_seq_length=args.max_seq_length,
         dataset_text_field="text",

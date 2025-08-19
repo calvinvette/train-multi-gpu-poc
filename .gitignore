@@ -11,3 +11,9 @@ wheels/
 # Virtual environments
 .venv
 .locks
+
+# Exclude models from git
+qwen-coder-30b/
+llama-3-8b/
+
+
