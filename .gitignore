@@ -9,11 +9,12 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
+.venv/
 .locks
 
 # Exclude models from git
 qwen-coder-30b/
 llama-3-8b/
 
-
+# Exclude imported libs (custom-built whls like flash_attn)
+lib/
