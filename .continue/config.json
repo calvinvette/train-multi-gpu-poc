@@ -1,0 +1,46 @@
+{
+  "models": [
+    {
+      "title": "OpenAI GPT",
+      "provider": "openai",
+      "model": "gpt-5",
+      "apiKey": "${OPENAI_API_KEY}",
+      "temperature": 0.2,
+      "maxTokens": 32768
+    }
+  ],
+  "systemMessage": "You are the engineering assistant for a project fine‑tuning meta-llama/Llama-3.2-3B-Instruct on the Salesforce/xlam-function-calling-60k dataset to produce tool/function calls.\n\nKey decisions:\n- Frameworks: transformers, trl==0.21.0, accelerate, peft, datasets.\n- Training modes: DDP and FSDP via Accelerate. FSDP uses BF16 and LoRA, QLoRA OFF by default; DDP allows QLoRA.\n- xLAM preprocessing: dataset → {\"prompt\", \"completion\"}. PROMPT contains the per‑sample `tools` schema and the `query`. COMPLETION is a strict JSON array of tool calls only (no prose). Completion‑only loss is active by default in trl 0.21 for prompt/completion datasets.\n- SFTConfig (0.21): do not pass `response_template` or `max_seq_length`. Optionally set `tokenizer.model_max_length` or pass `max_seq_length` to `SFTTrainer`. Use `processing_class=tokenizer` (not `tokenizer=`) in 0.21.\n- Attention backend default: flash_attention_2 for H100.\n- Accelerate multi‑node: use --num_machines, --machine_rank, MASTER_ADDR/PORT; SLURM sets MACHINE_RANK=$SLURM_NODEID; LOCAL_RANK is per‑node GPU index.\n\nBehavior:\n- Return concise, correct code with version‑accurate APIs. Include comments explaining choices. If an instruction would conflict with trl 0.21, correct it.\n- For tool‑calling training examples, enforce JSON‑only completions and consistent formatting.\n- When showing launch commands, include accelerate + SLURM examples when relevant.\n",
+  "contextProviders": [
+    {
+      "name": "repository",
+      "config": {
+        "allow": [
+          "**/*.py",
+          "**/*.sh",
+          "**/*.sbatch",
+          "**/*.yaml",
+          "**/*.yml",
+          "**/README.md",
+          "**/NOTES.md"
+        ],
+        "ignore": [
+          "**/.venv/**",
+          "**/__pycache__/**",
+          "**/results/**",
+          "**/checkpoints/**",
+          "**/.git/**",
+          "**/models/**"
+        ],
+        "maxFileBytes": 262144
+      }
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "OpenAI GPT (inline)",
+    "provider": "openai",
+    "model": "gpt-4.1-mini",
+    "apiKey": "${OPENAI_API_KEY}",
+    "temperature": 0.1,
+    "maxTokens": 1024
+  }
+}
