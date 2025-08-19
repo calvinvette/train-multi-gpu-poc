@@ -182,7 +182,7 @@ def main():
         save_steps=args.save_steps,
         optim=args.optim,
         bf16=args.bf16,
-        max_seq_length=args.max_seq_length,
+        # max_seq_length=args.max_seq_length,   # migrated
         report_to=["mlflow"] if args.mlflow_tracking_uri else [],
         completion_only_loss=True,
         response_template=SEP,
@@ -196,6 +196,7 @@ def main():
         formatting_func=formatting_func,
         peft_config=peft_config,
         args=sft_config,
+        max_seq_length=args.max_seq_length,   # ✅ pass here in 0.21.0 (or default to tokenizer.max_model_length)
     )
 
     # PEFT + FSDP: wrap only LoRA params
