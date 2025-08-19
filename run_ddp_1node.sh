@@ -10,9 +10,9 @@ export CUDA_DEVICE_MAX_CONNECTIONS=1
 export MASTER_ADDR=${MASTER_ADDR:-$(hostname)}
 export MASTER_PORT=${MASTER_PORT:-${MASTER_PORT:-29500}}
 
-export NUM_MACHINES=1
-export NUM_GPUs=$(nvidia-smi -L | wc | awk '{print $1}')
-export MACHINE_RANK=1 #???
+export NUM_MACHINES=1 # A single node with either a single H100 or 8xH100
+export NUM_GPUs=$(nvidia-smi -L | wc | awk '{print $1}') # number of H100 (or GPU cards in general)
+export MACHINE_RANK=0 # Accelerate's node number in a multi-node job
 
 # Optional: MLflow tracking URI
 export MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-"http://orin1.drake-ulmer.ts.net:5000"} # Port 5000?
@@ -35,7 +35,7 @@ mkdir -p logs
 accelerate launch \
   --config_file configs/accelerate_ddp.yaml \
   --num_machines ${NUM_MACHINES} \
-  --machine_rank 1 \ 
+  --machine_rank ${MACHINE_RANK} \ 
    python train_sft.py \
     --mode ddp \
     --model-name ${SFT_MODEL} \
@@ -43,6 +43,7 @@ accelerate launch \
     --dataset-split train \
     --output-dir ./results_ddp_${SFT_MODEL}_${LAUNCH_DATE} \
     --max-steps 1000 \
+    --attn flash_attention_2 \
     --per-device-train-batch-size 2 \
     --grad-accum-steps 8 \
     --learning-rate 2e-4 \

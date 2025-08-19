@@ -33,6 +33,7 @@
 
 ## 2) Environment (conda/venv)
 ```bash
+cp .env.example .env # Customize
 uv init
 . .venv/bin/activate
 . .env

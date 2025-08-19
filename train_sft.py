@@ -30,7 +30,7 @@ def parse_args():
     # training
     p.add_argument("--output-dir", default="./results")
     p.add_argument("--max-steps", type=int, default=1000)
-    p.add_argument("--max-seq-length", type=int, default=1024)
+    p.add_argument("--max-seq-length", type=int, default=1414)
     p.add_argument("--per-device-train-batch-size", type=int, default=2)
     p.add_argument("--grad-accum-steps", type=int, default=8)
     p.add_argument("--learning-rate", type=float, default=2e-4)
@@ -104,8 +104,6 @@ def to_prompt_completion(ex):
         #     "completion": [{"role":"assistant","content": ex["answer"]}],  
         #     "tools": tools_schema_list}
 
-dataset = dataset.map(to_prompt_completion, remove_columns=[c for c in dataset.column_names if c not in {"prompt","completion"}])
-
 # Separator where the **answer JSON** begins (loss is applied after this)
 SEP = "\n### ASSISTANT JSON:\n"
 
@@ -122,7 +120,9 @@ def formatting_func(ex):
             tools = json.loads(tools)
         except Exception:
             pass
-    tools_text = json.dumps(tools, ensure_ascii=False, indent=2)
+    # tools_text = json.dumps(tools, ensure_ascii=False, indent=2)
+    # Removing indent to compact tokens
+    tools_text = json.dumps(tools, ensure_ascii=False)
 
     # Normalize label (answer) to compact JSON
     ans = ex.get("answer")
@@ -162,6 +162,7 @@ def main():
 
     # dataset
     ds = load_dataset(args.dataset, split=args.dataset_split)
+    dataset = ds.map(to_prompt_completion, remove_columns=[c for c in ds.column_names if c not in {"prompt","completion"}])
 
     # tokenizer
     trust_remote_code = True
@@ -232,7 +233,8 @@ def main():
     from trl import SFTTrainer, SFTConfig
 
     # Optional: enforce your own max length in 0.21 by setting it on the tokenizer
-    tokenizer.model_max_length = args.max_seq_length  # safest cross-version approach
+    # tokenizer.model_max_length = args.max_seq_length  # safest cross-version approach
+    tokenizer.model_max_length = 2048  # Catering to Llama's 8k context window / 4
 
     sft_config = SFTConfig(
         output_dir=args.output_dir,
@@ -256,6 +258,7 @@ def main():
         processing_class=tokenizer,          # <- in 0.21 use processing_class (or omit)
         peft_config=peft_config,
         args=sft_config,
+        packing=False                        # Turn off while debugging.
         # DO NOT pass response_template or tokenizer here in 0.21
     )
 
