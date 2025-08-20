@@ -268,7 +268,7 @@ def main():
         processing_class=tokenizer,          # <- in 0.21 use processing_class (or omit)
         peft_config=peft_config,
         args=sft_config,
-        #packing=False                        # Turn off while debugging.
+        packing=False                        # Turn off while debugging.
         # DO NOT pass response_template or tokenizer here in 0.21
     )
 
