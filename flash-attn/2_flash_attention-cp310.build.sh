@@ -14,6 +14,6 @@ docker build . \
 docker run \
         --rm \
         -it \
-        -v ../out:/out \
+        -v ../lib:/out \
         --name booger nge/builder.flash-attention \
         cp /workspace/flash-attention/dist/flash_attn-2.8.2-cp310-cp310-linux_x86_64.whl /out/
