@@ -1,0 +1,9 @@
+# Single machine (or multi-machine) DDP with 1 GPU per node
+compute_environment: LOCAL_MACHINE
+distributed_type: MULTI_GPU
+num_machines: 1            # override at launch with --num_machines if multi-node
+num_processes: 8           # 1 GPU per node (increase to >1 if multi-GPU node)
+machine_rank: 0
+mixed_precision: bf16
+gpu_ids: all
+

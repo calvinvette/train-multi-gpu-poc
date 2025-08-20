@@ -1,6 +1,86 @@
 # Project NOTES.md — Fine-tuning for Tool/Function Calling (xLAM → Llama 3.2‑3B)
+# Project Notes: Multi-GPU Fine-Tuning with DDP/FSDP
+
+---
+
+This file is meant to keep ChatGPT, Continue.dev (Cline), and any other assistants in sync.
+Update this file whenever the training scripts, configs, or datasets change.
+
+
 
 > This file is a “memory bridge” so editor assistants (Continue.dev/Cline/Cursor/etc.) always have the essentials for this repo. Keep it short, current, and version‑accurate.
+
+--- 
+
+## Current State
+- Training script (`train_sft.py`) works with HuggingFace Accelerate on SLURM and non-SLURM setups.
+- Validated on H100 hardware (CUDA 12.6, FlashAttention 2.8.3 built from source).
+- MLflow integration works: tracks loss, metrics, and system stats (GPU utilization, memory).
+- QLoRA + bf16 training confirmed working after forcing LoRA modules into bf16.
+- Produces saved model and adapter layers at end of training.
+
+---
+
+## Improvements Incorporated
+1. **LoRA dtype fix**  
+   - Cast all LoRA layers to bf16 when running with `--bf16 --qlora` to avoid `float != bfloat16` runtime errors.
+   - Example:
+     ```python
+     from peft.tuners.lora import LoraLayer
+     for m in model.modules():
+         if isinstance(m, LoraLayer):
+             m.to(torch.bfloat16)
+     ```
+
+2. **BitsAndBytesConfig improvements**  
+   - Ensure quantized models use:
+     ```python
+     bnb_4bit_compute_dtype=torch.bfloat16
+     ```
+
+3. **Accelerate launcher cleanup**  
+   - Removed stray `python` after `accelerate launch`.  
+   - Fixed line-continuation with no trailing spaces after `\`.
+
+4. **NUM_GPUs detection**  
+   - Improved with `wc -l`:
+     ```bash
+     NUM_GPUs=$(nvidia-smi -L | wc -l)
+     ```
+
+5. **Dataset preprocessing**  
+   - For Salesforce/xlam-function-calling-60k:
+     ```python
+     def format_example(example):
+         return {
+             "text": f"query:\n{example['query']}\n\nanswer:\n{example['answer']}"
+         }
+     ```
+   - Tokenization handled during training with `completion_only_loss=True`.
+
+---
+
+## Open Questions / TODO
+- [ ] Decide whether to log GPU VRAM/TFLOPs directly to MLflow or scrape via Prometheus/Grafana.
+- [ ] Benchmark FlashAttention 2.8.3 vs. 3.x on H100s once stable.
+- [ ] Test multi-node SLURM training (`MACHINE_RANK`, `MASTER_ADDR`) with >1 GPU/node.
+- [ ] Add validation/eval dataset to monitor function-calling accuracy (not just training loss).
+- [ ] Update README with exact Accelerate CLI invocations for each mode (DDP, FSDP, PP).
+
+---
+
+## Sync Checklist (ChatGPT â Continue.dev)
+Whenever you change one of these, update NOTES.md:
+- Dataset path or formatting
+- Model name/version
+- Training hyperparameters (batch size, lr, warmup, etc.)
+- Accelerate/SLURM configs
+- FlashAttention / CUDA versions
+- Logging integrations (MLflow, Prometheus)
+
+---
+
+Previous Notes
 
 ---
 
@@ -186,3 +266,7 @@ Key envs used inside scripts:
   - `run_*.sbatch` — SLURM launchers.
   - `scripts/preproc_xlam.py` — dataset mapping (prompt/completion).
 - Always assume: TRL 0.21 semantics, tool‑calling completions are **JSON‑only**.
+
+---
+
+
