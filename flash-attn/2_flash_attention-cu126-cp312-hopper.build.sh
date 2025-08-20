@@ -5,11 +5,11 @@
 # TODO
 # There has to be a cleaner way of doing this...
 
-mkdir -p ../lib
+mkdir -p ../lib/hopper
 
 
 docker build . \
-    -f Dockerfile.flash-attention-cu126-cp312.amd64 \
+    -f Dockerfile.flash-attention-cu126-cp312-hopper.amd64 \
     -t nge/builder.flash-attention \
     && \
 docker run \
@@ -17,4 +17,4 @@ docker run \
         -it \
         -v ../lib:/out \
         --name booger nge/builder.flash-attention \
-        cp /workspace/flash-attention/dist/flash_attn-2.8.3-cp312-cp312-linux_$(arch).whl /out/
+        cp /workspace/flash-attention/dist/flash_attn-2.8.3-cp312-cp312-linux_$(arch).whl /out/hopper

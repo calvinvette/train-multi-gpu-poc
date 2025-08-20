@@ -5,7 +5,7 @@
 # TODO
 # There has to be a cleaner way of doing this...
 
-mkdir -p ../out
+mkdir -p ../lib
 
 
 docker build . \
@@ -17,4 +17,4 @@ docker run \
         -it \
         -v ../lib:/out \
         --name booger nge/builder.flash-attention \
-        cp /workspace/flash-attention/dist/flash_attn-2.8.2-cp312-cp312-linux_x86_64.whl /out/
+        cp /workspace/flash-attention/dist/flash_attn-2.8.2-cp312-cp312-linux_$(arch).whl /out/

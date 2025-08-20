@@ -10,7 +10,7 @@
 # export as a whl to /out
 
 # ---- builder ----
-FROM docker.io/nvidia/cuda:12.9.0-devel-ubuntu22.04
+FROM docker.io/nvidia/cuda:12.6.0-devel-ubuntu22.04
 
 RUN mkdir -p /workspace
 WORKDIR /workspace
@@ -28,7 +28,7 @@ RUN add-apt-repository ppa:deadsnakes/ppa
 
 # Upgrade pip and install uv
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y python3.12 
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 9
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 6
 RUN apt-get remove -y python3.10
 RUN apt-get install -y python3.12-venv python3.12-dev
 RUN /usr/bin/python3.12 -m ensurepip --upgrade
@@ -36,7 +36,7 @@ RUN pip3 install --no-cache-dir --upgrade pip
 RUN pip3 install packaging uv wheel
 
 # First install torch and friends (necessary for the build)
-# PyTorch + CUDA 12.9 wheel (smaller than NGC PyTorch image)
+# PyTorch + CUDA 12.6 wheel (smaller than NGC PyTorch image)
 #RUN uv pip install --system --no-cache-dir --index-url https://download.pytorch.org/whl/cu126 \
 RUN pip install --index-url https://download.pytorch.org/whl/cu126 \
     torch \
@@ -57,8 +57,9 @@ RUN mkdir -p /out
 # First build flash_attention
 # TODO - Parameterize the GPU Arch
 # Build for Ampere and above; Consider flash-attn3 for Blackwell
-ENV SMS="87"            
-ENV CUDA_ARCH_BIN="87"
+ENV SMS="90"            
+ENV CUDA_ARCH_BIN="90"
+ENV TORCH_CUDA_ARCH_LIST="9.0"
 ENV CUDA_HOME="/usr/local/cuda"
 # TODO - Verify these optimizations; they change over time
 # We need to build MAGMA (BLAS) with CUDA support
@@ -67,9 +68,12 @@ ENV MAGMA_ENABLE_CUDA=ON
 ENV USE_PRIORITIZED_TEXT_FOR_LD=1
 # Use the new C++ ABI
 ENV _GLIBCXX_USE_CXX11_ABI=1
+# CUDNN
+ENV USE_SYSTEM_CUDNN=1
+
 
 # Now let's actually build the thing
-RUN git clone --branch v2.8.3 --depth 1 https://github.com/Dao-AILab/flash-attention.git
+RUN git clone https://github.com/Dao-AILab/flash-attention.git
 
 # Add MAX_JOBS=4 before the python3 setup.py if we have 96GB or RAM or less
 # RUN cd flash-attention && MAX_JOBS=8 python3 setup.py build develop bdist_wheel
@@ -79,7 +83,7 @@ RUN git clone --branch v2.8.3 --depth 1 https://github.com/Dao-AILab/flash-atten
 # YMMV, but this is the closest I've come to making this systematic as oppose to experiential
 # max_jobs=$(mem_jobs=$(expr $(free --giga | grep Mem: | awk '{print $2}') / 15); proc_jobs=$(expr $(nproc) / 4); echo $(($proc_jobs < $mem_jobs ? $proc_jobs : $mem_jobs)))
 #RUN cd flash-attention && MAX_JOBS=$(expr $(nproc) / 4) python3.12 setup.py build develop bdist_wheel
-RUN cd flash-attention && MAX_JOBS=$(mem_jobs=$(expr $(free --giga | grep Mem: | awk '{print $2}') / 15); proc_jobs=$(expr $(nproc) / 4); echo $(($proc_jobs < $mem_jobs ? $proc_jobs : $mem_jobs))) python3.12 setup.py build develop bdist_wheel
+RUN cd flash-attention/hopper && MAX_JOBS=$(mem_jobs=$(expr $(free --giga | grep Mem: | awk '{print $2}') / 15); proc_jobs=$(expr $(nproc) / 4); echo $(($proc_jobs < $mem_jobs ? $proc_jobs : $mem_jobs))) python3.12 setup.py build develop bdist_wheel
 
 # Wheel should be here:
 # /workspace/flash-attention/dist/flash_attn-2.8.3-cp310-cp310-linux_x86_64.whl
