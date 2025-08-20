@@ -1,0 +1,18 @@
+export USE_CUDA=1
+
+#replace 12.8 with your cuda version
+export CUDA_HOME=/usr/local/cuda-12.8
+export USE_SYSTEM_NCCL=0
+export USE_SYSTEM_CUDNN=1
+export BUILD_CAFFE2=0
+
+#replace 8.9 with the compute capability of your gpu for minimal install. Can also be omitted
+export TORCH_CUDA_ARCH_LIST="8.9"
+
+#Without this the build breaks due to some error.
+export USE_FLASH_ATTENTION=0
+
+#I had to limit the number of threads building uses since building was using 100% cpu for quite a long time and it crashed at one point. Replace 16 with a logical number or you can omit it
+export MAX_JOBS=16
+
+python setup.py install
