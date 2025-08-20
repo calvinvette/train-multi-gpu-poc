@@ -10,9 +10,11 @@ export CUDA_DEVICE_MAX_CONNECTIONS=1
 export MASTER_ADDR=${MASTER_ADDR:-$(hostname)}
 export MASTER_PORT=${MASTER_PORT:-${MASTER_PORT:-29500}}
 
+# Some of these are overriden by the accelerate config file
 export NUM_MACHINES=1 # A single node with either a single H100 or 8xH100
 export NUM_GPUs=$(nvidia-smi -L | wc -l) # number of H100 (or GPU cards in general)
 export MACHINE_RANK=0 # Accelerate's node number in a multi-node job
+export ACCELERATE_CONFIG_FILE=${ACCELERATE_CONFIG_FILE:-"configs/accelerate_ddp.yaml"}
 
 # Optional: MLflow tracking URI
 export MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-"http://orin1.drake-ulmer.ts.net:5000"} # Port 5000?
@@ -34,7 +36,7 @@ mkdir -p logs
 # --prometheus-port 8000
 # --attn flash_attention_2 \
 accelerate launch \
-  --config_file configs/accelerate_ddp.yaml \
+  --config_file ${ACCELERATE_CONFIG_FILE} \
   --num_machines ${NUM_MACHINES} \
   --machine_rank ${MACHINE_RANK} \
    train_sft.py \
