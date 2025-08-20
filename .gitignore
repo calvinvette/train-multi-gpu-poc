@@ -19,3 +19,6 @@ llama-3-8b/
 
 # Exclude imported libs (custom-built whls like flash_attn)
 lib/
+
+# Exclude results
+results*/

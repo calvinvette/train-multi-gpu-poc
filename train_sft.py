@@ -182,6 +182,16 @@ def main():
         use_cache=False,
         attn_implementation=attn_impl,
     )
+
+    if enable_4bit:
+        model_kwargs["quantization_config"] = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.bfloat16,
+        )
+    else:
+        model_kwargs["torch_dtype"] = torch.bfloat16
+
     if bnb_config is not None:
         model_kwargs["quantization_config"] = bnb_config
     else:
@@ -258,9 +268,19 @@ def main():
         processing_class=tokenizer,          # <- in 0.21 use processing_class (or omit)
         peft_config=peft_config,
         args=sft_config,
-        packing=False                        # Turn off while debugging.
+        #packing=False                        # Turn off while debugging.
         # DO NOT pass response_template or tokenizer here in 0.21
     )
+
+    # Adjust LoRA layers to bf16 to avoid dtype issues:
+    try:
+        from peft.tuners.lora import LoraLayer
+        for m in trainer.model.modules():
+            if isinstance(m, LoraLayer):
+                m.to(torch.bfloat16)
+    except Exception as e:
+        print("[warn] Could not cast LoRA layers to bf16:", e)
+
 
     # PEFT + FSDP: wrap only LoRA params
     if args.mode == "fsdp" and getattr(trainer.accelerator.state, "fsdp_plugin", None):

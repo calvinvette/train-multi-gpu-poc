@@ -11,18 +11,18 @@ export MASTER_ADDR=${MASTER_ADDR:-$(hostname)}
 export MASTER_PORT=${MASTER_PORT:-${MASTER_PORT:-29500}}
 
 export NUM_MACHINES=1 # A single node with either a single H100 or 8xH100
-export NUM_GPUs=$(nvidia-smi -L | wc | awk '{print $1}') # number of H100 (or GPU cards in general)
+export NUM_GPUs=$(nvidia-smi -L | wc -l) # number of H100 (or GPU cards in general)
 export MACHINE_RANK=0 # Accelerate's node number in a multi-node job
 
 # Optional: MLflow tracking URI
 export MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-"http://orin1.drake-ulmer.ts.net:5000"} # Port 5000?
-export MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING=${MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING:-true} 
+export MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING=${MLFLOW_ENABLE_SYSTEM_METRICS_LOGGING:-true}
 export MLFLOW_EXPERIMENT_NAME=${MLFLOW_EXPERIMENT_NAME:-"SFTtrain-${LAUNCH_DATE}"}
 
 export SFT_DATASET=${SFT_DATASET:-"Salesforce/xlam-function-calling-60k"}
 export SFT_MODEL=${SFT_MODEL:-"meta-llama/Meta-Llama-3-8B"}
 
-source .venv/bin/activate
+. .venv/bin/activate
 
 mkdir -p logs
 
@@ -32,11 +32,12 @@ mkdir -p logs
 # --main_process_ip ${MASTER_ADDR} \
 # --gpu-peak-tflops 900 \
 # --prometheus-port 8000
+# --attn flash_attention_2 \
 accelerate launch \
   --config_file configs/accelerate_ddp.yaml \
   --num_machines ${NUM_MACHINES} \
-  --machine_rank ${MACHINE_RANK} \ 
-   python train_sft.py \
+  --machine_rank ${MACHINE_RANK} \
+   train_sft.py \
     --mode ddp \
     --model-name ${SFT_MODEL} \
     --dataset ${SFT_DATASET} \
@@ -51,5 +52,5 @@ accelerate launch \
     --logging-steps 10 \
     --save-steps 200 \
     --bf16 \
-    --qlora \
+    --no-qlora \
 
