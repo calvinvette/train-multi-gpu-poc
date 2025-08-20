@@ -1,0 +1,18 @@
+# Two machines, one GPU each (FSDP)
+compute_environment: LOCAL_MACHINE
+distributed_type: FSDP
+num_machines: 1
+num_processes: 8           # 1 GPU per node
+machine_rank: 0            # Overridden at launch via --machine_rank
+mixed_precision: bf16
+gpu_ids: all
+
+fsdp_config:
+  fsdp_auto_wrap_policy: TRANSFORMER_BASED_WRAP
+  fsdp_backward_prefetch_policy: NO_PREFETCH
+  fsdp_sharding_strategy: FULL_SHARD
+  offload_params: false
+  min_num_params: 0
+  state_dict_type: SHARDED_STATE_DICT
+  use_orig_params: false
+
